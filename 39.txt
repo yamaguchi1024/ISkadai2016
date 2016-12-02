@@ -1,0 +1,18 @@
+
+`--> ./a.out
+13.000000
+7.500000
+
+
+#include<stdio.h>
+#define half(x) x/2
+double half2(int x){
+  return (double)x/2;
+}
+
+int main(){
+        printf("%f\n",(double)half(3*4+3));
+        printf("%f\n",(double)half2(3*4+3));
+
+        return 0;
+}
