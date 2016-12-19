@@ -8,7 +8,6 @@ char a[1003][1000];
 int map[1003][1000];
 char start[1000];
 char fin[1000];
-char tmp[1000];
 int dis;
 int d[1003];
 int used[1003];
@@ -19,7 +18,7 @@ int stoi(char * tmp){
     int i=0;
     for(i=0;i<1003;i++){
         if(!strcmp(a[i],tmp)){
-                break;
+            break;
         }else if(a[i][0]==0){
             strcpy(a[i],tmp);
             break;
@@ -67,44 +66,36 @@ void dijekstra(int s){
 
 
 void get_path(int f){
-    int tmp[2000];
-    int t;
-    for(t=0;t<1004;t++) tmp[t]=LAGE;
-    int si = 0;
     for(; f!= -1; f=prev[f]) {
-        tmp[si]=f;
-        si++;
-    }
-    if(tmp[0]==LAGE){ printf("(no route)\n"); return;} 
-    int i=si;
-    for(i=si-1;i>=0;i--){
-        printf("%s\n",a[tmp[i]]);
+        printf("%s\n",a[f]);
     }
 }
 
 int main(){
+    char tmp[1000];
     init();
     scanf("%s",start);
     scanf("%s",fin);
+    int st = stoi(start);
+    int fi = stoi(fin);
     while(1){
         if(scanf("%s",tmp)==EOF) break;
         int s = stoi(tmp);
         scanf("%s",tmp);
         int f = stoi(tmp);
         scanf("%d",&dis);
-        map[s][f]=dis;
+        if(map[s][f]>dis){
+            map[s][f]=dis;
+            map[f][s]=dis;
+        }
     }
-    int st = stoi(start);
-    int fi = stoi(fin);
     while(1){ 
         if(a[size][0]==0) break;
-        printf("%d %s\n",size,a[size]);
         size++;
     }
-    printf("size: %d\n",size);
 
-    dijekstra(st);
-    get_path(fi);
+    dijekstra(fi);
+    get_path(st);
 
     return 0;
 }

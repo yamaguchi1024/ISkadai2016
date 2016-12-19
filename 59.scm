@@ -1,7 +1,8 @@
-(define (fix f)
-  (lambda (x) ((f (fix f)) x)))
+(define (fix2 f)
+  ((lambda (x) (f (lambda (y) ((x x) y)))) (lambda (x) (f (lambda (y) ((x x) y)))))
+  )
 (define (fact5 a) 
-  ((fix (lambda (x) 
+  ((fix2 (lambda (x) 
           (lambda (y)
             (if (= y 1)
               1
