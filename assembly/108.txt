@@ -1,0 +1,87 @@
+以下のプログラムを108.sとして保存した。
+
+.section ".rodata"
+.align 3
+fone:
+#定数1.0と0.0
+    .double 1.0
+    .double 0.0
+.section ".text"
+    .globl saturate
+    .align 2
+saturate:
+#まず定数1.0をf2にロードする。
+    addis %r3,%r2, fone@toc@ha
+    addi %r3,%r3, fone@toc@l
+    lfd %f2,0(%r3)
+#f1とf1を比べてf1>f2ならmoveへジャンプ
+    fcmpu %cr0,%f1,%f2
+    bgt move
+#f2に0をロードする。
+    lfd %f2,8(%r3)
+#f1<f2ならmoveへジャンプ。
+    fcmpu %cr0,%f1,%f2
+    blt move
+    blr
+move:
+#ここで、もしf1>f2(f2==1)の時にジャンプしたらf1=f2と代入され、f1<f2(f2==0)の時にジャンプしたらf1=f2(f2==0)と代入される。
+    fmr %f1,%f2
+    blr
+
+以下のプログラムを108.cとして保存した。
+
+#include<stdio.h>
+
+double saturate(double x);
+int main(){
+    double d;
+    while(~scanf("%lf",&d)){
+        printf("%lf\n",saturate(d));
+    }
+    return 0;
+}
+
+以下のテストケースを108testとして保存した。
+
+NAN
+INFINITY
+-INFINITY
+0.0
+-0.0
+1.0
+0.12
+0.91
+0.991
+0.123567887654
+1.32435
+-0.1243
+-12
+13
+-0.001
+1.001
+
+以下のコマンドを実行した。
+
+gcc 108.s 108.c -o 108
+./108 < 108test
+
+実行結果は以下。
+
+nan
+1.000000
+0.000000
+0.000000
+-0.000000
+1.000000
+0.120000
+0.910000
+0.991000
+0.123568
+1.000000
+0.000000
+0.000000
+1.000000
+0.000000
+1.000000
+
+小数点第６位以下が四捨五入になっているのはいいのか・・・
