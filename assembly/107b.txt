@@ -1,0 +1,37 @@
+以下のプログラムを107b.sとして保存した。
+
+#.data section
+.data
+#4バイト境界にパディング
+.align 2
+msg:
+    .string "Hello, world!"
+    .align 2
+    .globl hello
+hello:
+#r3の上位16ビットにロードする。
+    lis %r3,msg@ha
+#r3の下位6ビットにロードする(加算することによって)
+    addi %r3,%r3,msg@l
+    blr
+
+以下のプログラムを107b.cとして保存した。
+
+#include<stdio.h>
+
+const char *hello(void);
+
+int main(){
+    puts(hello());
+    return 0;
+}
+
+以下のコマンドを実行した。
+powerpc64le-linux-gnu-gcc 107b.c 107b.s -o 107 -static
+./107
+
+実行結果は以下。
+
+.-(~/kadai/assembly)---------------------------------------------(yamaguchi@ubuchu)-
+`--> ./107
+Hello, world!

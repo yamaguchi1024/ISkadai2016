@@ -1,0 +1,82 @@
+strcatの仕様を調べた。
+
+「文字型配列s1のうしろに文字列s2を連結します。'\0' も連結するのでs1はその分も考えて大きさを宣言しておかなければなりません。
+s1 を超して連結した場合と、s1とs2が重なっていた場合は、動作は未定義となります。」
+
+普通にdestの後ろに繋げて良いみたいなので、そうすることにする。
+
+以下のプログラムを106b.sとして保存した。
+
+    .globl mystrcat
+mystrcat:
+#戻り値のために、destの先頭のポインタを退避させておく。
+    mr %r8,%r3
+loop:
+#r5<-M[r3+0]
+    lbz %r5,0(%r3)
+#r5がnull文字か調べる。
+    cmpwi %r5,0
+#null文字だったらジャンプ。
+    beq copy
+#null文字じゃなかったら、インクリメントしてnull文字が出てくるまで探す。
+    addi %r3,%r3,1
+    b loop
+copy:
+#r6<-M[r4+0]
+    lbz %r6,0(%r4)
+#M[r3+0]<-r6
+    stb %r6,0(%r3)
+#r6がnull文字ならジャンプ。
+    cmpwi %r6,0
+    beq rtn
+#copyしているので、srcのnull文字が出てきてコピーが終わるまでポインタをインクリメントする。
+    addi %r4,%r4,1
+    addi %r3,%r3,1
+    b copy
+rtn:
+#退避しておいたのを元に戻す。
+    mr %r3,%r8
+    blr 
+
+以下のプログラムを106b.cとして保存した。
+
+#include<stdio.h>
+
+char *mystrcat(char *dest,const char *src);
+
+int main(){
+    char s[1000];
+    char a[1000];
+
+    while(~scanf("%s %s",s,a)){
+        printf("%s\n",mystrcat(s,a));
+    }
+    return 0;
+}
+
+以下のテストケースを106btestとして保存した。
+
+abc def
+mama pohe
+aiu eo
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+1 f
+tuburana kabosu
+cookies chan
+
+以下のコマンドを実行した。
+
+powerpc64le-linux-gnu-gcc 106b.c 106b.s -o 106b -static
+./106b < 106btest
+
+実行結果は以下。
+
+abcdef
+mamapohe
+aiueo
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+1f
+tuburanakabosu
+cookieschan
+
+良さそうである。
