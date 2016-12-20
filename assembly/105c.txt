@@ -1,0 +1,61 @@
+以下のプログラムを105c.sとして保存した。
+    .globl fib
+fib:
+    #fib(i)とfib(i+1)を初期化し、保存しておく。
+    li %r4,1
+    li %r5,1
+loop:
+    #r3をデクリメントしていき、1になったらretに飛ばしてreturn
+    cmpwi %r3,1
+    beq ret
+    #r6<-r4+r5
+    add %r6,%r4,%r5
+    #r4<-r5
+    mr %r4,%r5
+    #r5<-r6
+    mr %r5,%r6
+    #r3をデクリメントする。
+    subi %r3,%r3,1
+    #loopする。
+    b loop
+ret:
+    #r3に結果を入れる。
+    mr %r3,%r4
+    blr
+
+以下のプログラムを105c.cとして保存した。
+
+#include<stdio.h>
+
+int fib(int n);
+
+int main(){
+    int n;
+    while(~scanf("%d",&n)){
+        printf("%d\n",fib(n));
+    }
+    return 0;
+}
+
+以下のテストケースを、105testとして保存した。
+1
+2
+3
+5
+15
+42
+
+以下のコマンドを実行した。
+
+powerpc64le-linux-gnu-gcc 105c.c 105c.s -o 105 -static
+./105 < 105test
+
+実行結果は以下。
+1
+1
+2
+5
+610
+267914296
+
+fib(1)==1,fib(2)==2として初期化したので、よさそうである。
