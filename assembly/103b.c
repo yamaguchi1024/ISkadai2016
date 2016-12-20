@@ -3,9 +3,9 @@
 int enlarge(int x);
 
 int main(){
-    int x;
-    while(scanf("%d",&x) != EOF){
-    printf("%d\n",enlarge(x));
+    long x;
+    while(scanf("%ld",&x) != EOF){
+    printf("%ld\n",enlarge(x));
     }
     return 0;
 }
