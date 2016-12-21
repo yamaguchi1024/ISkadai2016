@@ -1,0 +1,60 @@
+以下のプログラムを112.sとして保存した。
+
+.section ".rodata"
+.align 3
+zero:
+#f1を初期化しないといけないので。
+    .double 0.0
+.globl dot
+.align 2
+dot:
+#何回再帰したかカウントするためにr7をインクリメントする。
+    li %r7,0
+#r6はロードするときに使う。
+    li %r6,0
+    addis %r8,%r2,zero@toc@ha
+    addi %r8,%r8,zero@toc@l
+    lfs %f1,0(%r8)
+#0だったら抜ける
+    cmpwi %r3,0
+    beqlr
+dot2:    
+#f2<-[r4+r6],r6を再帰ごとに+8することで、要素同士（というのか？）の掛け算ができる。
+    lfdx %f2,%r4,%r6
+    lfdx %f3,%r5,%r6
+#掛け算をf4に代入しておく。
+    fmul %f4,%f2,%f3
+#f1<-f1+f4
+    fadd %f1,%f1,%f4
+    addi %r6,%r6,8
+    addi %r7,%r7,1
+#r7をインクリメントしていき、r3(size)と一致したら抜ける。
+    cmpw %r7,%r3
+    bne dot2
+    blr
+
+以下のプログラムを112.cとして保存した。
+
+#include<stdio.h>
+
+double dot(size_t n,const double v[],const double w[]);
+
+int main(){
+double a[]={-2.32, 23.3};
+double b[]={10.9, 2.5};
+printf("%lf\n",dot(2, a, b));
+printf("%lf\n",dot(0, NULL, NULL));
+double e[]={0.0783, 4.57, 13.1, -5.45, 9.60, 9.07};
+double f[]={-5.85, 0.397, 2.11, 4.04, 2.20, -3.48};
+printf("%lf\n",dot(6, e, f));
+return 0;
+}
+
+以下のコマンドを実行した。
+gcc 112.s 112.c -o 112
+./112
+
+実行結果は以下。
+32.962000
+0.000000
+-3.464365
