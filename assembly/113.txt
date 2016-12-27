@@ -1,0 +1,71 @@
+以下のプログラムを113b.sとして保存した。
+
+.globl  ntimes
+#int ntimes(int n, int (*f)(int), int x);
+ntimes:
+#非揮発性レジスタの退避
+    std %r31,-8(%r1)
+    std %r30,-16(%r1)
+    std %r29,-24(%r1)
+#n,f,xを非揮発性レジスタに入れる
+    mr %r29,%r3
+    mr %r30,%r4
+    mr %r31,%r5
+    mflr %r0
+    std %r0,16(%r1)
+    stdu %r1,-64(%r1)
+#r3に引数xを入れる。
+#fの戻り値もr3に入るので、レジスタを更新しなくても引数に正しい値が入る。
+    mr %r3,%r31
+loop:
+#nが0ならループから抜ける
+    cmpdi %r29,0
+    ble end
+#引数r3には正しい値が入っているので、fにジャンプする
+    mtctr %r30
+    bctrl
+#一ループごとにｎをデクリメントする
+    addi %r29,%r29,-1
+    b loop
+end:
+    addi %r1,%r1,64
+    ld %r0,16(%r1)
+    mtlr %r0
+    ld %r29,-24(%r1)
+    ld %r30,-16(%r1)
+    ld %r31,-8(%r1)
+    blr
+
+以下のプログラムを113b.cとして保存した。
+
+#include<stdio.h>
+#include<assert.h>
+#include<string.h>
+
+static int doub(int x) {
+    return x * 2;
+}
+static int collatz_step(int x) {
+    return x % 2 == 0 ? x / 2 : x * 3 + 1;
+}
+
+int ntimes(int n, int (*f)(int), int x);
+
+int main(){
+    assert(ntimes(4, doub, 3) == 48);
+    assert(ntimes(77, collatz_step, 27) == 9232);
+    assert(ntimes(0, collatz_step, 27) == 27);
+	printf("OK\n");
+    return 0;
+}
+
+
+以下のコマンドを実行した。
+
+gcc 113b.c 113b.s -o 113 -static
+./113
+
+実行結果
+
+OK
+

@@ -1,19 +1,21 @@
+修正しました。
+
 以下のプログラムを109.sとして保存した。
 
 .globl puts_twice
 puts_twice:
     mflr %r0
     std %r0,16(%r1)
-    stdu %r1,-20(%r1)
+    stdu %r1,-112(%r1)
 #スタック上にポインタを保存しておく。
-    std %r3,4(%r1)
+    std %r3,64(%r1)
     bl puts
     nop
 #スタック上からポインタを読みだす。
-    ld %r3,4(%r1)
+    ld %r3,64(%r1)
     bl puts
     nop
-    la %r1,20(%r1)
+    la %r1,112(%r1)
     ld %r0,16(%r1)
     mtlr %r0
     blr
