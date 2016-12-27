@@ -1,0 +1,80 @@
+以下のプログラムを116b.sとして保存した。
+
+#おまじない
+.abiversion 2
+.globl _start
+#10000ぐらいでいいかな
+.section .data
+buff:
+    .space 10000
+.section .text
+#_startとmainないとめっちゃ怒られる
+_start:
+main:
+#Your name?をstdoutに書くところ。
+write:
+    li %r0,4
+    li %r3,1
+#r2はゴミが入ってるかなと思ってlisにした
+    lis %r4,name@ha
+    addi %r4,%r4,name@l
+    li %r5,11
+    sc
+
+read:
+#名前を読み取るところ
+    li %r0,3
+    li %r3,0
+    lis %r4,buff@ha
+    addi %r4,%r4,buff@l
+    li %r5,10000
+    sc
+
+sayhello:
+#そのままだけど、何故か文字数を適当にread&writeしても改行でいい感じに終わってくれるので非常に助かる
+    li %r0,4
+    li %r3,1
+    lis %r4,hello@ha
+    addi %r4,%r4,hello@l
+    li %r5,7
+    sc
+    li %r0,4
+    li %r3,1
+    lis %r4,buff@ha
+    addi %r4,%r4,buff@l
+    li %r5,10000
+    sc
+
+#exitないと怒られる
+exit:
+    li %r0,1
+    li %r3,0
+    sc
+
+
+name:
+    .string "Your name? "
+hello:
+    .string "Hello, "
+
+以下のMakefileを作成した。
+
+.PHONY: all
+116: 116b.s
+	as 116b.s -o 116b.o
+	ld 116b.o -o 116
+
+all: 116
+
+以下のファイルをtestとして保存した。
+
+mama
+
+以下のコマンドを実行した。
+
+make
+./116 < test
+　
+実行結果は以下。
+
+Your name? Hello, mama
