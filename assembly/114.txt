@@ -1,0 +1,51 @@
+以下のプログラムを114b.sとして保存した。
+
+.section .data
+#1024バイト確保する
+cwd: .space 1024
+.section .text
+.globl  print_cwd
+print_cwd:
+    mflr %r0
+    std %r0,16(%r1)
+    stdu %r1,-48(%r1)
+
+#syscall getcwd
+    li %r0,182
+#第一引数にcwdのポインタを渡す
+    addis %r3,%r2,cwd@toc@ha
+    addi %r3,%r3,cwd@toc@l
+#第二引数のsizeは上限？
+    li %r4,1024
+    sc
+
+#戻り地はサイズになっているので、これをwriteの第三引数に渡すとそのサイズだけ出力してくれてちょうどいい
+    mr %r5,%r3
+#syscall write
+    li %r0,4
+#stdout
+    li %r3,1
+    addis %r4,%r2,cwd@toc@ha
+    addi %r4,%r4,cwd@toc@l
+    sc
+
+    blr
+
+
+以下のプログラムを114b.cとして保存した。
+#include<stdio.h>
+
+void print_cwd(void);
+
+int main(){
+    print_cwd();
+    return 0;
+}
+
+以下のコマンドを実行した。
+gcc 114b.s 114b.c -o 114
+./114
+
+実行結果
+
+/home/g009
