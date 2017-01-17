@@ -131,7 +131,7 @@
 ;quote-eval
 (define quote-eval (lambda (env exp)
                      (if (correct-syntax? 'quote exp)
-                       (cons env ((car (cdr exp))))
+                       (cons env (car (cdr exp)))
                        (eval-error env 'syntax-error exp)
                        )
                      )
@@ -162,7 +162,7 @@
                    (let ((decl (car (cdr exp)))
                          (body (cdr (cdr exp))))
                      (cons (cons 'lambda (cons (map car decl) body))
-                           (map (car (cdr decl)))))))
+                           (map cadr decl)))))
 
 ;defineの処理
 (define def-eval (lambda (env exp)
@@ -263,7 +263,7 @@
                        (let ((env (define-var env 'set-car!
                                                (make-primitive #f (lambda (env args) (cons env (set-car! (car args) (cadr args))))))))
                        (let ((env (define-var env 'map
-                                               (make-primitive #f (lambda (env args) (cons env (map (car args) (cadr args))))))))
+                                               (make-primitive #f (lambda (env args) (cons env (map (car args))))))))
                        (let ((env (define-var env 'car
                                                (make-primitive #f (lambda (env args) (cons env (caar args)))))))
                         (let ((env (define-var env 'cdr
@@ -319,7 +319,7 @@
 ;処理系本体
 (define scheme (lambda () 
                  (let ((top-env (make-top-env)))
-                   (define (rep-loop env)
+                   (define rep-loop (lambda (env)
                      (display "mama> ")
                      (let ((res (base-eval env (read))))
                         (let ((env (car res))
@@ -329,5 +329,5 @@
                        (if (equal? val '*exit*)
                          #t
                          (rep-loop env))))
-                     )
+                     ))
                    (rep-loop top-env))))
