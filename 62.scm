@@ -307,13 +307,29 @@
                         (let ((env (define-var env 'equal?
                                                (make-primitive 2 (lambda (env args)
                                                                    (cons env (equal? (car args) (cadr args))))))))
+                        (let ((env (define-var env 'with-input-from-file
+                                               (make-primitive 2 (lambda (env args)
+                                                                   (cons env (with-input-from-file (car args) (cadr args))))))))
                         (let ((env (define-var env 'display
                                                (make-primitive
                                                  1
                                                  (lambda (env args)
                                                    (display (car args))
-                                                   (cons env '*unspecified*)))))) env
-                        )))))))))))))))))))))))))))))
+                                                   (cons env '*unspecified*))))))
+                         (let ((env (define-var env 'load
+                                     (make-primitive 1
+                                      (lambda (env args)
+                                       (with-input-from-file (car args)
+                                        (lambda ()
+                                         (define re-loop (lambda (env)
+                                                          (let ((res (base-eval env (read))))
+                                                           (let ((env (car res)) (val (cdr res)))
+                                                            (if (equal? val '*exit*)
+                                                             (cons env '*unspecified*)
+                                                             (re-loop env))))))
+                                          (re-loop env))))))))
+                         env
+                         )))))))))))))))))))))))))))))))
                          )))
 
 ;処理系本体
