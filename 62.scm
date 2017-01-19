@@ -50,7 +50,11 @@
 
 ;データがλ閉包かどうかを判定
 (define data-closure? (lambda (data)
-                        (and (pair? data) (equal? (car data) '*lambda*))))
+                        (if (pair? data)
+                         (equal? (car data) '*lambda*)
+                        #f
+                         )
+                        ))
 ;環境を取り出す
 (define closure-env (lambda (x) (car (cdr x))))
 ;パラメータを取り出す
@@ -67,7 +71,10 @@
 ;データが組み込み関数かどうか判定
 
 (define data-primitive? (lambda (data)
-                          (and (pair? data) (equal? (car data) '*primitive*))))
+                          (if (pair? data)
+                           (equal? (car data) '*primitive*)
+                            #f
+                           )))
 ;引数を取り出す
 (define primitive-arity (lambda (x) (car (cdr x))))
 ;関数を取り出す
@@ -180,6 +187,14 @@
                         (cons env (make-closure env (cadr exp) (cdr (cdr  exp))))
                         (eval-error env 'syntax-error exp))))
 
+;map-evalという関数を作った。mapつかえないため。
+(define map-eval (lambda (fun arg now env)
+                  (if (null? arg)
+                  (reverse now)
+                   (map-eval fun (cdr arg) (cons (cdr (base-apply env fun (cons (car arg) '()))) now) env)
+                  )
+                 ))
+
 ;app-eval
 (define map-base-eval (lambda (env el)
                         (cons env
@@ -263,11 +278,11 @@
                        (let ((env (define-var env 'set-car!
                                                (make-primitive #f (lambda (env args) (cons env (set-car! (car args) (cadr args))))))))
                        (let ((env (define-var env 'map
-                                               (make-primitive #f (lambda (env args) (cons env (map (car args))))))))
+                                               (make-primitive 2 (lambda (env args) (cons env (map-eval (car args) (cadr args) '() env)))))))
                        (let ((env (define-var env 'car
-                                               (make-primitive #f (lambda (env args) (cons env (caar args)))))))
+                                               (make-primitive #f (lambda (env args) (cons env (car (car args))))))))
                         (let ((env (define-var env 'cdr
-                                               (make-primitive #f (lambda (env args) (cons env (cdar args)))))))
+                                               (make-primitive #f (lambda (env args) (cons env (cdr (car args))))))))
                         (let ((env (define-var env 'null?
                                                (make-primitive 1 (lambda (env args)
                                                                    (cons env (null? (car args))))))))
@@ -296,11 +311,14 @@
                                                (make-primitive 1 (lambda (env args)
                                                                    (cons env (car (cdr (car args)))))))))
                         (let ((env (define-var env 'read
-                                               (make-primitive 1 (lambda (env args)
-                                                                   (cons env (read (car args))))))))
+                                               (make-primitive 0 (lambda (env args)
+                                                                   (cons env (read)))))))
                         (let ((env (define-var env 'write
                                                (make-primitive 1 (lambda (env args)
                                                                    (cons env (write (car args))))))))
+                        (let ((env (define-var env 'reverse
+                                               (make-primitive 1 (lambda (env args)
+                                                                   (cons env (reverse (car args))))))))
                         (let ((env (define-var env 'newline
                                                (make-primitive 0 (lambda (env args)
                                                                    (cons env (newline)))))))
@@ -329,14 +347,14 @@
                                                              (re-loop env))))))
                                           (re-loop env))))))))
                          env
-                         )))))))))))))))))))))))))))))))
+                         ))))))))))))))))))))))))))))))))
                          )))
 
 ;処理系本体
-(define scheme (lambda () 
+(define scheme (lambda (x) 
                  (let ((top-env (make-top-env)))
                    (define rep-loop (lambda (env)
-                     (display "mama> ")
+                     (display x)
                      (let ((res (base-eval env (read))))
                         (let ((env (car res))
                             (val (cdr res)))
