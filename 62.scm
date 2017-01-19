@@ -298,6 +298,9 @@
                         (let ((env (define-var env 'number?
                                                (make-primitive 1 (lambda (env args)
                                                                    (cons env (number? (car args))))))))
+                        (let ((env (define-var env 'length
+                                               (make-primitive 1 (lambda (env args)
+                                                                   (cons env (length (car args))))))))
                         (let ((env (define-var env 'string?
                                                (make-primitive 1 (lambda (env args)
                                                                    (cons env (string? (car args))))))))
@@ -347,7 +350,7 @@
                                                              (re-loop env))))))
                                           (re-loop env))))))))
                          env
-                         ))))))))))))))))))))))))))))))))
+                         )))))))))))))))))))))))))))))))))
                          )))
 
 ;処理系本体
